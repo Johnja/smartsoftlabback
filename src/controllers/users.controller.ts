@@ -1,25 +1,21 @@
-import User from "../models/User.model";
+import { User } from "../entity/User.entity";
+import { getRepository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
-import { response } from 'express';
-import  createJWT  from '../helpers/jwt';
+import { Request, Response } from 'express';
+import { createJWT } from '../helpers/jwt';
 
-const getUsers = async ( req, res = response ) => {
+
+export const getUsers = async (req: Request, res: Response) => {
 
     try {
 
         //Buscar usuarios
-        const users = await User.findAll({
-            attributes: ['id', 'name', 'email', 'password'],
-            order: [
-                ['id', 'DESC']
-            ]
-        });
+        const users = await getRepository(User).find();
 
-        res.json({
+        return res.json({
             ok: true,
             users,
-            uid: req.uid //UID de usuario que realiza la peticion
         });
 
     } catch (error) {
@@ -31,19 +27,23 @@ const getUsers = async ( req, res = response ) => {
     }
 }
 
-const createUser = async (req, res = response) => {
+export const createUser = async (req: Request, res: Response) => {
 
     const { name, email, password } = req.body;
     const id = uuidv4();
 
+    const user = {
+        name,
+        email,
+        password,
+        id
+    }
+
     try {
 
-        //Verificar si el usuario no se ha creado antes
+        //Verificar si el usuario no se ha creado antes por email
 
-        const isEmail = await User.findOne({
-            attributes: ['id', 'name', 'email', 'password'],
-            where: { email }
-        });
+        const isEmail = await getRepository(User).findOne({ email });
 
         //Si existe no lo crea nuevamente
 
@@ -55,19 +55,16 @@ const createUser = async (req, res = response) => {
         };
 
         //encryptar contraseña
+
         const salt = bcrypt.genSaltSync();
         const passwordHash = bcrypt.hashSync(password, salt);
 
+        user.password = passwordHash;
+
         //Crear Usuario
 
-        let newUser = await User.create({
-            id,
-            name,
-            email,
-            password: passwordHash
-        }, {
-            fields: ['id', 'name', 'email', 'password']
-        });
+        const newUser = getRepository(User).create(user);
+        const results = await getRepository(User).save(newUser);
 
         //Generar Token
 
@@ -80,8 +77,8 @@ const createUser = async (req, res = response) => {
             token
         });
 
-    } catch (e) {
-        console.log(e);
+    } catch (error) {
+        console.log(error);
         res.status(500).json({
             ok: false,
             msg: 'Error Inesperado revisar logs',
@@ -89,21 +86,26 @@ const createUser = async (req, res = response) => {
     }
 }
 
-const updateUser = async (req, res = response) => {
+export const updateUser = async (req: Request, res: Response) => {
 
-    const id = req.params.id;
     const { name, email, password } = req.body;
+    const id = req.params.id;
+
+    const user = {
+        name,
+        email,
+        password,
+        id
+    }
 
     try {
 
         //Verificar si el usuario existe y traerlo
 
-        const userDB = await User.findOne({
-            attributes: ['id', 'name', 'email', 'password',],
-            where: { id }
-        });
+        let userDB = await getRepository(User).findOne(id);
 
         //Verificar que exista
+
         if (!userDB) {
             return res.status(400).json({
                 ok: false,
@@ -115,10 +117,7 @@ const updateUser = async (req, res = response) => {
 
         if (userDB.email !== email) {
 
-            const isEmail = await User.findOne({
-                attributes: ['id', 'name', 'email', 'password',],
-                where: { email }
-            });
+            const isEmail = await getRepository(User).findOne({email});
 
             if (isEmail) {
                 return res.status(400).json({
@@ -133,20 +132,19 @@ const updateUser = async (req, res = response) => {
         const salt = bcrypt.genSaltSync();
         const passwordHash = bcrypt.hashSync(password, salt);
 
+        user.password = passwordHash;
+
         //Actualizar usuario
 
-        const updatedUser = await User.update({
-            name,
-            email,
-            password: passwordHash
-        },
-            {
-                where: { id }
-            });
+        await getRepository(User).merge(userDB, user);
+
+        const result = await getRepository(User).save(userDB);
 
         return res.json({
             ok: true,
-            msg: 'Usuario Actualizado'
+            msg: 'Usuario Actualizado',
+            name: userDB.name,
+            email: userDB.email,
         });
 
     } catch (error) {
@@ -158,7 +156,7 @@ const updateUser = async (req, res = response) => {
     }
 }
 
-const deleteUser = async (req, res = response) => {
+export const deleteUser = async (req: Request, res: Response) => {
 
     const id = req.params.id;
 
@@ -166,10 +164,7 @@ const deleteUser = async (req, res = response) => {
 
         //Verificar que existe
 
-        const userDB = await User.findOne({
-            attributes: ['id', 'name', 'email', 'password',],
-            where: { id }
-        });
+        const userDB = await getRepository(User).findOne(id);
 
         if (!userDB) {
             return res.status(400).json({
@@ -180,11 +175,7 @@ const deleteUser = async (req, res = response) => {
 
         //Caso que exista borrar
 
-        await User.destroy({
-            where: {
-                id
-            }
-        });
+        const result = getRepository(User).delete(id)
 
         res.json({
             ok: true,
@@ -200,18 +191,15 @@ const deleteUser = async (req, res = response) => {
     }
 }
 
-const getOneUser = async (req, res = response) => {
+export const getOneUser = async (req: Request, res: Response) => {
 
-    const id  = req.params.id;
+    const id = req.params.id;
 
     try {
 
         //Verificar que el usuario existe
 
-        const userDB = await User.findOne({
-            attributes: ['id', 'name', 'email', 'password',],
-            where: { id }
-        });
+        const userDB = await getRepository(User).findOne(id);
 
         if (!userDB) {
             return res.status(400).json({
@@ -222,10 +210,9 @@ const getOneUser = async (req, res = response) => {
 
         res.json({
             ok: true,
-            id: userDB.dataValues.id,
-            name: userDB.dataValues.name,
-            email: userDB.dataValues.email,
-
+            id: userDB.id,
+            name: userDB.name,
+            email: userDB.email,
         });
 
     } catch (error) {
@@ -235,12 +222,4 @@ const getOneUser = async (req, res = response) => {
             msg: 'Error inesperado'
         })
     }
-}
-
-module.exports = {
-    getUsers,
-    createUser,
-    deleteUser,
-    updateUser,
-    getOneUser
 }

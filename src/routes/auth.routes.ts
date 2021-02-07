@@ -9,6 +9,7 @@ import { login, renewToken } from '../controllers/auth.controller';
 import { check, validationResult } from 'express-validator';
 import { validateFields } from '../middlewares/validate-fields';
 import { validateJWT } from '../middlewares/validate-jwt';
+import { Request, Response, NextFunction } from 'express';
 
 const router = Router();
 
@@ -19,7 +20,7 @@ router.post(
         check('password', 'El password es obligatorio').not().isEmpty(),
         validateFields,
     ],
-    (req, res, next) => {
+    (req: Request, res: Response, next: NextFunction) => {
         //Verifica los errores
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -35,7 +36,7 @@ router.get(
     [
         validateJWT,
     ],
-    (req, res, next) => {
+    (req: Request, res: Response, next: NextFunction) => {
         //Verifica los errores
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -47,4 +48,4 @@ router.get(
 
 )
 
-module.exports = router;
+export default router;

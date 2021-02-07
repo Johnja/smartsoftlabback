@@ -1,22 +1,17 @@
-/*
-
-PATH: /api/products
-
-*/
-
 import { Router } from 'express';
 import { check, validationResult } from 'express-validator';
 import { validateFields } from '../middlewares/validate-fields';
-import { getProducts, createProduct, updateProduct, deleteProduct, getOneProduct } from '../controllers/products.controller';
 import { validateJWT } from '../middlewares/validate-jwt';
+import { getUsers, createUser, updateUser, deleteUser, getOneUser } from '../controllers/users.controller';
+import { Request, Response, NextFunction } from 'express';
 
 const router = Router();
 
 router.get('/',
     [
-        validateJWT,
+        validateJWT
     ],
-    (req, res, next) => {
+    ( req: Request, res: Response, next: NextFunction) => {
         //Verifica los errores
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -24,18 +19,18 @@ router.get('/',
         }
         next()
     },
-    getProducts
+    getUsers
 );
 
 router.post(
     '/',
     [
-        validateJWT,
-        check('name', 'El nombre del producto es necesario').not().isEmpty(),
-        check('category', 'Una categoria es necesaria').not().isEmpty(),
+        check('name', 'El nombre es obligatorio').not().isEmpty(),
+        check('password', 'El password es obligatorio').not().isEmpty(),
+        check('email', 'El email es obligatorio').isEmail(),
         validateFields,
     ],
-    (req, res, next) => {
+    (req: Request, res: Response, next: NextFunction ) => {
         //Verifica los errores
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -43,7 +38,8 @@ router.post(
         }
         next()
     },
-    createProduct
+    createUser
+
 );
 
 router.put(
@@ -51,19 +47,19 @@ router.put(
     [
         validateJWT,
         check('name', 'El nombre es obligatorio').not().isEmpty(),
-        check('category', 'La categoria es obligatoria').isEmail(),
-        validateFields
+        check('email', 'El email es obligatorio').isEmail(),
+        check('password', 'El password es obligatorio').not().isEmpty(),
+        validateFields,
     ],
-    (req, res, next) => {
+    (req: Request, res: Response, next: NextFunction) => {
         //Verifica los errores
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
         }
-        next()
+        next();
     },
-    updateProduct
-
+    updateUser
 );
 
 router.delete(
@@ -71,16 +67,15 @@ router.delete(
     [
         validateJWT,
     ],
-    (req, res, next) => {
+    (req: Request, res: Response, next: NextFunction) => {
         //Verifica los errores
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
-        }
-        next()
+        }  
+        next();
     },
-    deleteProduct
-
+    deleteUser
 );
 
 router.get(
@@ -88,15 +83,15 @@ router.get(
     [
         validateJWT,
     ],
-    (req, res, next) => {
+    (req: Request, res: Response, next: NextFunction) => {
         //Verifica los errores
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
-        }
-        next()
+        };
+        next();
     },
-    getOneProduct
+    getOneUser
 );
 
-module.exports = router;
+export default router;

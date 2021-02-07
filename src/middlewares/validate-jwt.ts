@@ -2,8 +2,10 @@
 
 import jwt from 'jsonwebtoken';
 
+import { Request, Response, NextFunction } from 'express';
 
-const validateJWT = (req, res, next) => {
+
+export const validateJWT = (req: Request, res: Response, next: NextFunction) => {
 
     //Leer el token
 
@@ -18,9 +20,11 @@ const validateJWT = (req, res, next) => {
 
     try {
 
-        const { uid } = jwt.verify( token, process.env.JWT_SECRET);
+        const uid = jwt.verify(token, process.env.JWT_SECRET || '');
 
-        req.uid = uid;
+        req.body = {
+            "jswt": uid
+        };
 
         next();
 
@@ -33,7 +37,3 @@ const validateJWT = (req, res, next) => {
     }
 
 }
-
-module.exports = {
-    validateJWT
-};

@@ -1,8 +1,8 @@
-import { response } from 'express';
+import { Response, Request, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
 
 
-const validateFields = (req, res = response , next ) => {
+export const validateFields = ( req: Request, res: Response, next: NextFunction ) => {
 
     const errors = validationResult( req );
     
@@ -16,8 +16,3 @@ const validateFields = (req, res = response , next ) => {
     next();
 
 }
-
-module.exports = 
-{
-    validateFields
-} ;

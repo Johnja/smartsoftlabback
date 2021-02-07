@@ -1,16 +1,23 @@
+/*
+
+PATH: /api/products
+
+*/
+
 import { Router } from 'express';
 import { check, validationResult } from 'express-validator';
 import { validateFields } from '../middlewares/validate-fields';
+import { getProducts, createProduct, updateProduct, deleteProduct, getOneProduct } from '../controllers/products.controller';
 import { validateJWT } from '../middlewares/validate-jwt';
-import { getUsers, createUser, updateUser, deleteUser, getOneUser } from '../controllers/users.controller';
+import { Request, Response, NextFunction } from 'express';
 
 const router = Router();
 
 router.get('/',
     [
-        validateJWT
+        validateJWT,
     ],
-    (req, res, next) => {
+    (req: Request, res: Response, next: NextFunction) => {
         //Verifica los errores
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -18,18 +25,18 @@ router.get('/',
         }
         next()
     },
-    getUsers
+    getProducts
 );
 
 router.post(
     '/',
     [
-        check('name', 'El nombre es obligatorio').not().isEmpty(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
+        validateJWT,
+        check('name', 'El nombre del producto es necesario').not().isEmpty(),
+        check('category', 'Una categoria es necesaria').not().isEmpty(),
         validateFields,
     ],
-    (req, res, next ) => {
+    (req: Request, res: Response, next: NextFunction) => {
         //Verifica los errores
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -37,8 +44,7 @@ router.post(
         }
         next()
     },
-    createUser
-
+    createProduct
 );
 
 router.put(
@@ -46,18 +52,19 @@ router.put(
     [
         validateJWT,
         check('name', 'El nombre es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        validateFields,
+        check('category', 'La categoria es obligatoria').not().isEmpty(),
+        validateFields
     ],
-    (req, res, next) => {
+    (req: Request, res: Response, next: NextFunction) => {
         //Verifica los errores
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
         }
-        next();
+        next()
     },
-    updateUser
+    updateProduct
+
 );
 
 router.delete(
@@ -65,15 +72,16 @@ router.delete(
     [
         validateJWT,
     ],
-    (req, res) => {
+    (req: Request, res: Response, next: NextFunction) => {
         //Verifica los errores
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
-        }  
-        next();
+        }
+        next()
     },
-    deleteUser
+    deleteProduct
+
 );
 
 router.get(
@@ -81,15 +89,15 @@ router.get(
     [
         validateJWT,
     ],
-    (req, res) => {
+    (req: Request, res: Response, next: NextFunction) => {
         //Verifica los errores
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
-        };
-        next();
+        }
+        next()
     },
-    getOneUser
+    getOneProduct
 );
 
-module.exports = router;
+export default router;

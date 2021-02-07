@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const createJWT = (uid) => {
+export const createJWT = (uid: any) => {
 
     
     return new Promise( (resolve, reject ) => {
@@ -11,7 +11,7 @@ const createJWT = (uid) => {
     
         };
     
-        jwt.sign( payload, process.env.JWT_SECRET, {
+        jwt.sign( payload, process.env.JWT_SECRET || '', {
             expiresIn: '12h'
         }, (error, token) => {
             if(error){
@@ -27,4 +27,3 @@ const createJWT = (uid) => {
     
 }
 
-export default createJWT;

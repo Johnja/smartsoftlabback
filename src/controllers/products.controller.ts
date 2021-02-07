@@ -1,23 +1,18 @@
-import Product from "../models/Product.model";
+import { Product } from "../entity/Product.entity";
 import { v4 as uuidv4 } from 'uuid';
-import { response } from 'express';
+import { getRepository } from 'typeorm';
+import { Request, Response } from 'express';
 
-const getProducts = async (req, res = response) => {
+export const getProducts = async ( req: Request, res: Response) => {
 
     try {
 
         //Buscar productos
-        const products = await Product.findAll({
-            attributes: ['id', 'name', 'category', 'priece', 'stock'],
-            order: [
-                ['id', 'DESC']
-            ]
-        });
+        const products = await getRepository(Product).find()
 
         res.json({
             ok: true,
             products,
-            uid: req.uid //UID de usuario que realiza la peticion
         });
 
     } catch (error) {
@@ -29,45 +24,30 @@ const getProducts = async (req, res = response) => {
     }
 }
 
-const createProduct = async (req, res = response) => {
+export const createProduct = async ( req: Request, res: Response) => {
 
     const { name, category, priece, stock } = req.body;
     const id = uuidv4();
 
+    const product = {
+        id,
+        name,
+        category,
+        priece,
+        stock
+    }
+
     try {
-
-        //Verificar si el producto no se ha creado antes por el name
-
-        const isName = await Product.findOne({
-            attributes: ['id', 'name', 'category', 'priece', 'stock'],
-            where: { name }
-        });
-
-        //Si existe no lo crea nuevamente
-
-        if (isName) {
-            return res.status(400).json({
-                ok: false,
-                msg: 'Existe otro producto con el mismo nombre'
-            });
-        };
 
         //Crear Producto
 
-        let newProduct = await Product.create({
-            id,
-            name,
-            category,
-            priece,
-            stock
-        }, {
-            fields: ['id', 'name', 'category', 'priece', 'stock']
-        });
+        const newProduct = getRepository(Product).create(product);
+        const results = await getRepository(Product).save(newProduct);
 
         res.json({
             ok: true,
             msg: 'Producto creado',
-            data: newProduct
+            data: results
         });
 
     } catch (error) {
@@ -79,7 +59,7 @@ const createProduct = async (req, res = response) => {
     }
 }
 
-const updateProduct = async (req, res = response ) => {
+export const updateProduct = async ( req: Request, res: Response ) => {
 
     const  id  = req.params.id;
     const { name, category, priece, stock } = req.body;
@@ -88,12 +68,7 @@ const updateProduct = async (req, res = response ) => {
 
         //Verificar si el producto Existe y traerlo
 
-        const productDB = await Product.findOne({
-            attributes: ['id', 'name', 'category', 'priece', 'stock'],
-            where: {
-                id
-            }
-        });
+        const productDB = await getRepository(Product).findOne(id);
 
         //Verificar que exista
         if (!productDB) {
@@ -103,23 +78,16 @@ const updateProduct = async (req, res = response ) => {
             });
         };
 
-        console.log("producto DB",productDB);
-
         //Actualizar producto
 
-        const updatedProduct = await Product.update({
-            name,
-            category,
-            priece,
-            stock
-        },
-            {
-                where: { id }
-            });
+        await getRepository(Product).merge(productDB, req.body);
+        
+        const result = await getRepository(Product).save(productDB);
 
         return res.json({
             ok: true,
             message: 'Producto actualizado',
+            result
         });
 
     } catch (error) {
@@ -131,7 +99,7 @@ const updateProduct = async (req, res = response ) => {
     }
 }
 
-const deleteProduct = async (req, res = response ) => {
+export const deleteProduct = async ( req: Request, res: Response ) => {
 
     const id = req.params.id;
 
@@ -139,10 +107,7 @@ const deleteProduct = async (req, res = response ) => {
 
         //Verificar que existe
 
-        const productDB = await Product.findOne({
-            attributes: ['id', 'name', 'category', 'priece', 'stock'],
-            where: { id }
-        });
+        const productDB = await getRepository(Product).findOne(id);
 
         if (!productDB) {
             return res.status(400).json({
@@ -153,16 +118,13 @@ const deleteProduct = async (req, res = response ) => {
 
         //Caso que exista borrar
 
-        await Product.destroy({
-            where: {
-                id
-            }
-        });
+        const result = getRepository(Product).delete(id)
 
         res.json({
             ok: true,
             msg: 'Producto Borrado'
         });
+
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -172,7 +134,7 @@ const deleteProduct = async (req, res = response ) => {
     }
 }
 
-const getOneProduct = async (req, res = response ) => {
+export const getOneProduct = async ( req: Request, res: Response ) => {
 
     const id  = req.params.id;
 
@@ -180,10 +142,7 @@ const getOneProduct = async (req, res = response ) => {
 
         //Verificar que el producto existe
 
-        const productDB = await Product.findOne({
-            attributes: ['id', 'name', 'category', 'priece', 'stock'],
-            where: { id }
-        });
+        const productDB = await getRepository(Product).findOne(id);
 
         if (!productDB) {
             return res.status(400).json({
@@ -194,7 +153,7 @@ const getOneProduct = async (req, res = response ) => {
 
         res.json({
             ok: true,
-            data: product
+            data: productDB
         });
     } catch (error) {
         console.log(error);
@@ -205,13 +164,5 @@ const getOneProduct = async (req, res = response ) => {
     }
 }
 
-
-module.exports = {
-    getProducts,
-    createProduct,
-    deleteProduct,
-    updateProduct,
-    getOneProduct
-}
 
 

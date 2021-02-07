@@ -1,22 +1,18 @@
-import { response } from 'express';
 import bcrypt from 'bcryptjs';
-import User from '../models/User.model';
-import  createJWT  from '../helpers/jwt';
+import { User } from '../entity/User.entity';
+import { getRepository } from 'typeorm';
+import { Response, Request } from 'express';
+import { createJWT } from '../helpers/jwt';
 
-const login = async (req, res = response) => {
+export const login = async (req: Request, res: Response) => {
 
- const { email, password } = req.body;
+    const { email, password } = req.body;
 
     try {
 
-         //Buscar el usuario en DB
+        //Buscar el usuario en DB
 
-         const userDB= await User.findOne({
-            attributes:  ['id', 'name', 'email', 'password'],
-            where: { email }
-        });
-
-        const uid = userDB._id;
+        const userDB = await getRepository(User).findOne({ email });
 
         //Si no regresa usuario
 
@@ -26,11 +22,12 @@ const login = async (req, res = response) => {
                 ok: false,
                 msg: 'Verifique contraseña y email'
             })
-        }
+        } 
 
         //Verificar contraseña
 
         const validPassword = bcrypt.compareSync(password, userDB.password);
+
 
         if (!validPassword) {
             return res.status(400).json({
@@ -39,15 +36,15 @@ const login = async (req, res = response) => {
             })
         };
 
+
         //Generar el token - JWT
 
-       const token = await createJWT(userDB._id);
+        const token = await createJWT(userDB.id);
 
         res.json({
             ok: true,
             token,
-            uid
-            
+
         })
     } catch (error) {
         res.status(500).json({
@@ -58,23 +55,18 @@ const login = async (req, res = response) => {
 
 }
 
+export const renewToken = async (req: Request, res: Response) => {
 
-const renewToken = async (req, res = response) => {
+    const { jswt } = req.body;
 
-    const uid = req.uid;
+    //Generar el token - JWT
 
-         //Generar el token - JWT
-
-         const token = await createJWT(uid);
+    const token = await createJWT(jswt.uid);
 
     res.json({
         ok: true,
-        uid,
+        uid: jswt.uid,
         token
     })
 }
 
-module.exports = {
-    login,
-    renewToken
-}
