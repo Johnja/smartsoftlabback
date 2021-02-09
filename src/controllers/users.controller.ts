@@ -29,8 +29,8 @@ export const getUsers = async (req: Request, res: Response) => {
 
 export const createUser = async (req: Request, res: Response) => {
 
-    const { name, email, password } = req.body;
-    const id = uuidv4();
+    const { id, name, email, password } = req.body;
+ 
 
     const user = {
         name,
@@ -88,14 +88,15 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
 
-    const { name, email, password } = req.body;
     const id = req.params.id;
 
+    const {  name, email, password } = req.body;
+
     const user = {
+        id,
         name,
         email,
         password,
-        id
     }
 
     try {
@@ -117,7 +118,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
         if (userDB.email !== email) {
 
-            const isEmail = await getRepository(User).findOne({email});
+            const isEmail = await getRepository(User).findOne({ email });
 
             if (isEmail) {
                 return res.status(400).json({
@@ -210,9 +211,7 @@ export const getOneUser = async (req: Request, res: Response) => {
 
         res.json({
             ok: true,
-            id: userDB.id,
-            name: userDB.name,
-            email: userDB.email,
+            user: userDB
         });
 
     } catch (error) {

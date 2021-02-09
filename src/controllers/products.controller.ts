@@ -61,6 +61,8 @@ export const createProduct = async ( req: Request, res: Response) => {
 
 export const updateProduct = async ( req: Request, res: Response ) => {
 
+    console.log("llega aca");
+
     const  id  = req.params.id;
     const { name, category, priece, stock } = req.body;
 
@@ -82,12 +84,12 @@ export const updateProduct = async ( req: Request, res: Response ) => {
 
         await getRepository(Product).merge(productDB, req.body);
         
-        const result = await getRepository(Product).save(productDB);
+        const product = await getRepository(Product).save(productDB);
 
         return res.json({
             ok: true,
             message: 'Producto actualizado',
-            result
+            product
         });
 
     } catch (error) {
@@ -153,7 +155,7 @@ export const getOneProduct = async ( req: Request, res: Response ) => {
 
         res.json({
             ok: true,
-            data: productDB
+            product: productDB
         });
     } catch (error) {
         console.log(error);

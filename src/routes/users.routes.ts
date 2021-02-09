@@ -45,11 +45,11 @@ router.post(
 router.put(
     '/:id',
     [
-        validateJWT,
-        check('name', 'El nombre es obligatorio').not().isEmpty(),
-        check('email', 'El email es obligatorio').isEmail(),
-        check('password', 'El password es obligatorio').not().isEmpty(),
-        validateFields,
+       validateJWT,
+       check('name', 'El nombre es obligatorio').not().isEmpty(),
+       check('email', 'El email es obligatorio').isEmail(),
+       check('password', 'El password es obligatorio').not().isEmpty(),
+       validateFields,
     ],
     (req: Request, res: Response, next: NextFunction) => {
         //Verifica los errores

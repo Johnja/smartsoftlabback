@@ -42,7 +42,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getOneUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUsers = void 0;
 var User_entity_1 = require("../entity/User.entity");
 var typeorm_1 = require("typeorm");
-var uuid_1 = require("uuid");
 var bcryptjs_1 = __importDefault(require("bcryptjs"));
 var jwt_1 = require("../helpers/jwt");
 var getUsers = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
@@ -72,12 +71,11 @@ var getUsers = function (req, res) { return __awaiter(void 0, void 0, void 0, fu
 }); };
 exports.getUsers = getUsers;
 var createUser = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, name, email, password, id, user, isEmail, salt, passwordHash, newUser, results, token, error_2;
+    var _a, id, name, email, password, user, isEmail, salt, passwordHash, newUser, results, token, error_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req.body, name = _a.name, email = _a.email, password = _a.password;
-                id = uuid_1.v4();
+                _a = req.body, id = _a.id, name = _a.name, email = _a.email, password = _a.password;
                 user = {
                     name: name,
                     email: email,
@@ -129,17 +127,17 @@ var createUser = function (req, res) { return __awaiter(void 0, void 0, void 0, 
 }); };
 exports.createUser = createUser;
 var updateUser = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, name, email, password, id, user, userDB, isEmail, salt, passwordHash, result, error_3;
+    var id, _a, name, email, password, user, userDB, isEmail, salt, passwordHash, result, error_3;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req.body, name = _a.name, email = _a.email, password = _a.password;
                 id = req.params.id;
+                _a = req.body, name = _a.name, email = _a.email, password = _a.password;
                 user = {
+                    id: id,
                     name: name,
                     email: email,
                     password: password,
-                    id: id
                 };
                 _b.label = 1;
             case 1:
@@ -253,9 +251,7 @@ var getOneUser = function (req, res) { return __awaiter(void 0, void 0, void 0, 
                 }
                 res.json({
                     ok: true,
-                    id: userDB.id,
-                    name: userDB.name,
-                    email: userDB.email,
+                    user: userDB
                 });
                 return [3 /*break*/, 4];
             case 3:

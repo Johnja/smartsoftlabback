@@ -20,11 +20,12 @@ export const validateJWT = (req: Request, res: Response, next: NextFunction) => 
 
     try {
 
-        const uid = jwt.verify(token, process.env.JWT_SECRET || '');
+        const  uid  = jwt.verify(token, process.env.JWT_SECRET || '');
 
         req.body = {
+            ...req.body,
             "jswt": uid
-        };
+        };  
 
         next();
 

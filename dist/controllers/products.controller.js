@@ -108,10 +108,11 @@ var createProduct = function (req, res) { return __awaiter(void 0, void 0, void 
 }); };
 exports.createProduct = createProduct;
 var updateProduct = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, _a, name, category, priece, stock, productDB, result, error_3;
+    var id, _a, name, category, priece, stock, productDB, product, error_3;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
+                console.log("llega aca");
                 id = req.params.id;
                 _a = req.body, name = _a.name, category = _a.category, priece = _a.priece, stock = _a.stock;
                 _b.label = 1;
@@ -135,11 +136,11 @@ var updateProduct = function (req, res) { return __awaiter(void 0, void 0, void 
                 _b.sent();
                 return [4 /*yield*/, typeorm_1.getRepository(Product_entity_1.Product).save(productDB)];
             case 4:
-                result = _b.sent();
+                product = _b.sent();
                 return [2 /*return*/, res.json({
                         ok: true,
                         message: 'Producto actualizado',
-                        result: result
+                        product: product
                     })];
             case 5:
                 error_3 = _b.sent();
@@ -211,7 +212,7 @@ var getOneProduct = function (req, res) { return __awaiter(void 0, void 0, void 
                 }
                 res.json({
                     ok: true,
-                    data: productDB
+                    product: productDB
                 });
                 return [3 /*break*/, 4];
             case 3:
